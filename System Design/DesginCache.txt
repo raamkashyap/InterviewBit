@@ -1,0 +1,70 @@
+Design Cache system 
+
+Requirements ->  Check if the entry is present in the cache, 
+if present read it or go to the database for the entry and save it on to cache and read it.
+
+Questions: 
+
+1.What is the amound of the data we are going to store on the cache? 
+                similar to google/twitter , probably few Tera Bytes
+2. What should be the access patterns for the given cache? Write around or Write Through or Write Back? - > 
+                                Write around
+Write Around Cache system -> for the write opereation it directly talks to DB and writes the data there and for the read 
+if it is a cache miss then it fetched data from the DB and writes to cache
+Most of the cache misses happend if the user is trying to fetch recently written entries.
+This cache system is good if there are fewer reads and more writes
+
+3. What should be the eviction statergy in the Cache? FIFO/LRU/LFU
+                Go with default LRU
+    
+
+Estimations:
+
+1. As the total Cache is 30TB, How many queries per second(QPS) for the system?
+    Can expect 10M QPS per second
+
+2. How many caching machines are needed?
+    A production caching machine would have 72GB or 144GB of main memory for 30TB we need 30TB/72GB close to 420 machines
+
+
+Design:
+
+1. Is latency very Important
+        caching needs low latency so latency is very Important
+2. Consistency vs Availability
+        unavailability in a caching system is sytem going down which leads to high latency
+        where as Consistency is number of hits to cache being consistant
+        It is okay if there are cache misses but unabailability leads to high latency
+        Availability is prioritised
+
+
+Next step is to think about the design interms of API and overall workflow of a request 
+For read or write requests which components are involved and how they interact
+
+
+To implement a LRU cache that has enough space and need not be removed 
+    we can use a simple hashmap which just stores entires that's it
+If we need to evict some of the keys based on thier usage then we can maintain a doubly linkedlist with front of the queue which 
+stores most recently used and eliminating from last if cache has to be replaced. If a cache hit happens find out the value 
+from the hashmap and traverse doubly linkedlist and remove entry from there and store it in the front.
+
+
+How would you break down cache write and read into multiple instructions?
+
+Read path : Read a value corresponding to a key. This requires :
+    Operation 1 : A read from the HashMap and then,
+    Operation 2 : An update in the doubly LinkedList
+
+Write path : Insert a new key-value entry to the LRU cache. This requires :
+    If the cache is full, then
+    Operation 3: Figure out the least recently used item from the linkedList
+    Operation 4: Remove it from the hashMap
+    Operation 5: Remove the entry from the linkedList.
+    Operation 6: Insert the new item in the hashMap
+    Operation 7: Insert the new item in the linkedList.
+
+Have locks at the granular Level
+
+Sharding?
+420 machines handles 10M QPS so 23k QPS per machine
+
