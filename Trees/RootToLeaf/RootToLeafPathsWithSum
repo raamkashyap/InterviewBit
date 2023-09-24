@@ -1,0 +1,29 @@
+/**
+ * Definition for binary tree
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+ * };
+ */
+void helper(TreeNode *root, int B, int sum,vector<int>temp,vector<vector<int>> &res){
+    if(!root) return;
+    sum += root->val;
+    temp.push_back(root->val);
+    if(!root->left && !root->right){
+        if(sum == B){
+            res.push_back(temp);
+        }        
+        return;
+    }
+    helper(root->left,B,sum,temp,res);
+    helper(root->right,B,sum,temp,res);
+
+}
+vector<vector<int> > Solution::pathSum(TreeNode* A, int B) {
+    vector<vector<int>> res;
+    vector<int> temp;
+    helper(A,B,0,temp,res);
+    return res;
+}
